@@ -36,11 +36,32 @@ function setLanguage(code){const d=translations[code]||translations.en;document.
 lang.addEventListener('change',e=>setLanguage(e.target.value));let chosen='en';try{chosen=localStorage.getItem('uniten-lang')||'en'}catch(e){}setLanguage(translations[chosen]?chosen:'en');
 const root=document.getElementById('heroSlider'),items=[...root.querySelectorAll('.hero-slide')],dots=[...root.querySelectorAll('.slider-dot')];let active=0,timer;function show(n){active=(n+items.length)%items.length;items.forEach((it,i)=>{it.classList.toggle('active',i===active);it.setAttribute('aria-hidden',i===active?'false':'true');it.querySelectorAll('a').forEach(a=>i===active?a.removeAttribute('tabindex'):a.setAttribute('tabindex','-1'))});dots.forEach((dot,i)=>dot.classList.toggle('active',i===active))}function stop(){clearInterval(timer)}function start(){stop();if(!matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>show(active+1),6000)}root.querySelector('.prev').onclick=()=>{show(active-1);start()};root.querySelector('.next').onclick=()=>{show(active+1);start()};dots.forEach((dot,i)=>dot.onclick=()=>{show(i);start()});root.addEventListener('mouseenter',stop);root.addEventListener('mouseleave',start);root.addEventListener('focusin',stop);root.addEventListener('focusout',e=>{if(!root.contains(e.relatedTarget))start()});document.addEventListener('visibilitychange',()=>document.hidden?stop():start());show(0);start();
 })();</script><script>
-/* Prefer photos committed to this repository by the image download workflow. */
-document.querySelectorAll('#heroSlider .hero-slide').forEach((slide,index)=>{
-  const probe=new Image();
-  const localPath='assets/sliders/slide-'+(index+1)+'.jpg';
-  probe.onload=()=>{const current=slide.style.backgroundImage;const gradient=current.slice(0,current.lastIndexOf(',url('));slide.style.backgroundImage=gradient+",url('"+localPath+"')";};
-  probe.src=localPath;
-});
+/* Validate every photo before showing it; keep a working official UNITEN image as fallback. */
+(function(){
+ const slides=[...document.querySelectorAll('#heroSlider .hero-slide')];
+ const photos=[
+  ["assets/sliders/slide-1.jpg","https://infotest.uniten.edu.my/uniapps/Images/background_new.png"],
+  ["assets/sliders/slide-2.jpg","https://www.uniten.edu.my/media/q1zohepj/nec-4.jpg?format=webp&height=800&quality=90&width=1600","https://backend-service.uniten.edu.my/media/vxwp4hd3/08-01.jpg","https://infotest.uniten.edu.my/uniapps/Images/background_new.png"],
+  ["assets/sliders/slide-3.jpg","https://www.uniten.edu.my/media/q1zohepj/nec-4.jpg?format=webp&height=800&quality=90&width=1600"],
+  ["assets/sliders/slide-4.jpg","https://backend-service.uniten.edu.my/media/asqmsbxt/uniten-library.jpg","https://backend-service.uniten.edu.my/media/vxwp4hd3/08-01.jpg","https://www.uniten.edu.my/media/q1zohepj/nec-4.jpg?format=webp&height=800&quality=90&width=1600","https://infotest.uniten.edu.my/uniapps/Images/background_new.png"],
+  ["assets/sliders/slide-5.jpg","https://i.ytimg.com/vi/xlaFIc9-GDE/maxresdefault.jpg"]
+ ];
+ slides.forEach((slide,index)=>{
+  const style=slide.style.backgroundImage;
+  const gradient=style.slice(0,style.lastIndexOf(',url('));
+  let n=0;
+  function tryNext(){
+   if(n>=photos[index].length)return;
+   const url=photos[index][n++];
+   const img=new Image();
+   img.onload=()=>{
+    if(img.naturalWidth<300){tryNext();return;}
+    slide.style.backgroundImage=gradient+',url("'+url+'")';
+   };
+   img.onerror=tryNext;
+   img.src=url;
+  }
+  tryNext();
+ });
+})();
 </script></body></html>
