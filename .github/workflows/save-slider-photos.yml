@@ -1,0 +1,49 @@
+name: Save real UNITEN slider photos
+on:
+  push:
+    paths:
+      - '.github/workflows/save-slider-photos.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download and validate real photos
+        shell: bash
+        run: |
+          mkdir -p assets/sliders
+          python3 - <<'PY'
+          import urllib.request, pathlib, time
+          groups = [
+            ["https://i.ytimg.com/vi/xlaFIc9-GDE/maxresdefault.jpg","https://bimus.ac.id/berita/wp-content/uploads/2025/04/cover_1533278233.jpeg"],
+            ["https://backend-service.uniten.edu.my/media/vxwp4hd3/08-01.jpg","https://upload.wikimedia.org/wikipedia/commons/3/3d/UNITEN_Administration_Building.JPG"],
+            ["https://www.uniten.edu.my/media/q1zohepj/nec-4.jpg","https://backend-service.uniten.edu.my/media/q1zohepj/nec-4.jpg"],
+            ["https://backend-service.uniten.edu.my/media/tu5lvd2s/20190123_124144.jpg","https://lib.uniten.edu.my/ulib/images/2023/12/04/6.png"],
+            ["https://backend-service.uniten.edu.my/media/asqmsbxt/uniten-library.jpg","https://photos.wikimapia.org/p/00/05/98/49/31_big.jpg"]
+          ]
+          for i, sources in enumerate(groups, 1):
+            target = pathlib.Path(f"assets/sliders/slide-{i}.jpg")
+            for url in sources:
+              try:
+                req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 (compatible; WebsiteBuilder/1.0)"})
+                with urllib.request.urlopen(req,timeout=25) as r: content=r.read(12000000)
+                if len(content)<12000 or content[:3]!=b'\xff\xd8\xff':
+                  raise ValueError("Not a valid JPEG")
+                target.write_bytes(content)
+                print(f"Saved slide {i}: {len(content)} bytes")
+                break
+              except Exception as e: print(f"Slide {i}: URL failed: {e}")
+            if not target.exists(): print(f"WARNING: Slide {i} could not be downloaded")
+          PY
+      - name: Commit retrieved images
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/sliders/
+          if ! git diff --cached --quiet; then
+            git commit -m "Store real UNITEN slider photos locally"
+            git push
+          fi
