@@ -3,4 +3,9 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/overnzbk/uniten.overseashighwaystudy.com/
     - /bin/mkdir -p "$DEPLOYPATH"
-    - /bin/tar --exclude=.git --exclude=.cpanel.yml -cf - . | /bin/tar -xf - -C "$DEPLOYPATH"
+    - /bin/cp -f index.html "$DEPLOYPATH/index.html"
+    - /bin/cp -f .htaccess "$DEPLOYPATH/.htaccess"
+    - /bin/mkdir -p "$DEPLOYPATH/assets"
+    - /bin/cp -R assets/. "$DEPLOYPATH/assets/"
+    - /bin/chmod 644 "$DEPLOYPATH/index.html" "$DEPLOYPATH/.htaccess"
+    - /bin/chmod 755 "$DEPLOYPATH"
