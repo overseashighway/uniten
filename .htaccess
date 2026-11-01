@@ -1,5 +1,1 @@
 DirectoryIndex index.html
-Options -Indexes
-<IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-</IfModule>
