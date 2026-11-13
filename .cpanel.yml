@@ -8,4 +8,4 @@ deployment:
     - /bin/mkdir -p "$DEPLOYPATH/assets"
     - /bin/cp -R assets/. "$DEPLOYPATH/assets/"
     - /bin/chmod 644 "$DEPLOYPATH/index.html" "$DEPLOYPATH/.htaccess"
-    - /bin/chmod 755 "$DEPLOYPATH"
+    - /bin/chmod 750 "$DEPLOYPATH"
